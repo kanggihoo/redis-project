@@ -23,19 +23,19 @@ RedisTemplate을 직접 다루며 Cache Aside / Write-Back / Null Caching / Cach
 
 ### 0. 인프라 세팅
 
-- [ ] `docker-compose.yml` 작성 → Verify: `docker compose up` 후 모든 컨테이너 healthy
+- [x] `docker-compose.yml` 작성 → Verify: `docker compose up` 후 모든 컨테이너 healthy
   - PostgreSQL 17-alpine
   - Redis 7.2-alpine
   - redis_exporter
   - Prometheus
   - Grafana (Redis 대시보드 ID: 11835 import)
-- [ ] Spring Boot 프로젝트 기본 세팅 → Verify: `./gradlew bootRun` 정상 기동
+- [x] Spring Boot 프로젝트 기본 세팅 → Verify: `./gradlew bootRun` 정상 기동
   - `spring-boot-starter-data-redis`
   - `redisson`
   - `testcontainers-redis`
   - `micrometer-registry-prometheus`
-- [ ] `RedisConfig` 작성 → Verify: Redis 연결 확인 (StringRedisTemplate + RedisTemplate<String, Object> 두 개 Bean 등록)
-- [ ] DB 스키마 + Seed 데이터 → Verify: `accounts` 테이블 10개 row 확인
+- [x] `RedisConfig` 작성 → Verify: Redis 연결 확인 (StringRedisTemplate + RedisTemplate<String, Object> 두 개 Bean 등록)
+- [x] DB 스키마 + Seed 데이터 → Verify: `accounts` 테이블 10개 row 확인
 
 ---
 
@@ -43,16 +43,29 @@ RedisTemplate을 직접 다루며 Cache Aside / Write-Back / Null Caching / Cach
 
 **시나리오:** `GET /api/accounts/{id}` 호출 시 Redis 먼저 확인, 없으면 DB 조회 후 캐시 저장
 
-- [ ] `AccountCacheService` 껍데기 작성 → Verify: 컴파일 성공
+- [x] `AccountCacheService` 껍데기 작성 → Verify: 컴파일 성공
   ```
   getAccount(Long id): Account
   evictAccount(Long id): void
   ```
-- [ ] [Red] 캐시 히트 시 DB 호출 안 하는 테스트 작성 → Verify: 테스트 실패 확인
-- [ ] [Green] `GET` / `SET EX` 로 최소 구현 → Verify: 테스트 통과
-- [ ] [Red] 캐시 미스 시 DB 조회 후 Redis 저장 테스트 → Verify: 실패 확인
-- [ ] [Green] 구현 → Verify: 테스트 통과
-- [ ] Redis 키 전략 확정: `account:{id}` / TTL 60초 / JSON 직렬화
+- [x] [Red] 캐시 히트 시 DB 호출 안 하는 테스트 작성 → Verify: 테스트 실패 확인
+- [x] [Green] `GET` / `SET EX` 로 최소 구현 → Verify: 테스트 통과
+- [x] [Red] 캐시 미스 시 DB 조회 후 Redis 저장 테스트 → Verify: 실패 확인
+- [x] [Green] 구현 → Verify: 테스트 통과
+- [x] Redis 키 전략 확정: `account:{id}` / TTL 60초 / JSON 직렬화
+
+✅ Task 1: Cache Aside 완료
+단계 결과
+껍데기 작성 (Account, AccountRepository, AccountCacheService) ✅ 컴파일 성공
+[Red] 캐시 히트/미스 테스트 ✅ 실패 확인 (NoSuchBean)
+[Green] AccountCacheServiceImpl 구현 ✅ 2/2 테스트 통과
+키 전략: account:{id} / TTL 60초 / JSON 직렬화
+
+구현 위치:
+
+Account.java
+AccountCacheServiceImpl.java
+AccountCacheServiceTest.java
 
 ---
 
