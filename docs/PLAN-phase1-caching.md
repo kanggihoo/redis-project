@@ -14,48 +14,10 @@ RedisTemplate을 직접 다루며 Cache Aside / Write-Back / Null Caching / Cach
 
 ---
 
-## 의존성 (build.gradle — 직접 작성)
-
-### Core
-
-```
-org.springframework.boot:spring-boot-starter-web
-org.springframework.boot:spring-boot-starter-data-jpa
-org.springframework.boot:spring-boot-starter-data-redis
-org.postgresql:postgresql
-```
-
-### Redis
-
-```
-org.redisson:redisson-spring-boot-starter:3.27.2
-```
-
-### Monitoring
-
-```
-org.springframework.boot:spring-boot-starter-actuator
-io.micrometer:micrometer-registry-prometheus
-```
-
-### Test
-
-```
-org.springframework.boot:spring-boot-starter-test
-org.testcontainers:junit-jupiter
-org.testcontainers:postgresql
-com.redis:testcontainers-redis:2.2.2
-```
-
 ### 버전
 
-- Spring Boot: `4.0.x`
+- Spring Boot: `4.0.5`
 - Java: `21`
-- Testcontainers BOM: `1.20.4` (버전 통일 추천)
-
-```gradle
-testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
-```
 
 ## Tasks
 

@@ -94,7 +94,7 @@ WePay — P2P 간편송금 + 소규모 가맹점 정산
 
 ### Backend (Core API)
 
-- **Framework**: Spring Boot 4.x
+- **Framework**: Spring Boot 4.0.5
 - **Language**: Java 21 (LTS)
 - **Libraries**: Spring Data JPA, Spring Data Redis, Redisson, Micrometer Prometheus
 - **Testing**: JUnit 5, Testcontainers, CountDownLatch + ExecutorService
