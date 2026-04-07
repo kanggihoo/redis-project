@@ -6,6 +6,12 @@ CREATE TABLE IF NOT EXISTS accounts (
     updated_at  TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS store_transactions (
+    store_id   BIGINT    PRIMARY KEY,
+    tx_count   BIGINT    NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 INSERT INTO accounts (owner_name, balance) VALUES
     ('Alice',   1000000),
     ('Bob',     2000000),

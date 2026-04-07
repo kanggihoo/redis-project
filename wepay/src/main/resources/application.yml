@@ -21,6 +21,10 @@ spring:
       host: localhost
       port: 6379
 
+cache:
+  account:
+    ttl-seconds: 60
+
 management:
   endpoints:
     web:
