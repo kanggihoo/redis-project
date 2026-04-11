@@ -9,11 +9,11 @@ Phase 2에서는 이 문제를 3가지 전략으로 해결하고 K6로 비교 �
 
 ---
 
-## 필요 의존성 (사용자가 직접 추가)
+## 필요 의존성 (사용자가 직접 추가완료)
 
 ```groovy
 // build.gradle — dependencies 블록에 추가
-implementation 'org.redisson:redisson-spring-boot-starter:3.43.0'
+implementation 'org.redisson:redisson-spring-boot-starter:4.3.0'
 ```
 
 > 기존 spring-boot-starter-data-redis로 ZSET, HyperLogLog, Geo 모두 사용 가능.

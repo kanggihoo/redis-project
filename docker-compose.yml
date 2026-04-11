@@ -61,6 +61,17 @@ services:
     depends_on:
       - prometheus
 
+  k6:
+    image: grafana/k6:latest
+    container_name: wepay-k6
+    volumes:
+      - ./load-tests:/scripts
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    profiles:
+      - loadtest
+    entrypoint: ["k6", "run", "/scripts/stampeding-herd.js"]
+
 volumes:
   postgres_data:
   grafana_data:
