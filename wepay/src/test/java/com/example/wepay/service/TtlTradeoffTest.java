@@ -1,5 +1,6 @@
 package com.example.wepay.service;
 
+import com.example.wepay.TestcontainersConfiguration;
 import com.example.wepay.domain.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   - SNS 좋아요 수: Stale Tolerance = 수분 → TTL 길게
  */
 @SpringBootTest
-@Import(com.example.wepay.TestcontainersConfiguration.class)
+@Import(TestcontainersConfiguration.class)
 @TestPropertySource(properties = "cache.account.ttl-seconds=2") // SHORT TTL로 실험
 @Sql(scripts = "/test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(statements = "DELETE FROM accounts", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)

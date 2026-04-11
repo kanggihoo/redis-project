@@ -1,5 +1,6 @@
 package com.example.wepay.service;
 
+import com.example.wepay.TestcontainersConfiguration;
 import com.example.wepay.domain.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *   → 롤백 시에는 캐시 삭제 자체가 발생하지 않음
  */
 @SpringBootTest
-@Import(com.example.wepay.TestcontainersConfiguration.class)
+@Import(TestcontainersConfiguration.class)
 @Sql(scripts = "/test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(statements = "DELETE FROM accounts", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class CacheInvalidationTest {

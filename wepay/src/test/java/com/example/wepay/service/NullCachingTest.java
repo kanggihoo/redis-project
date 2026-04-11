@@ -1,4 +1,5 @@
 package com.example.wepay.service;
+import com.example.wepay.TestcontainersConfiguration;
 
 import com.example.wepay.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-@Import(com.example.wepay.TestcontainersConfiguration.class)
+@Import(TestcontainersConfiguration.class)
 class NullCachingTest {
 
     @Autowired

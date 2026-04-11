@@ -95,26 +95,11 @@ AccountCacheServiceTest.java
 | 키 전략: store:txcount:{storeId} / String / TTL 없음 | ✅ |
 
 구현 위치:
+
 - StoreTransaction.java
 - StoreTransactionRepository.java
 - TransactionCounterServiceImpl.java
 - TransactionCounterServiceTest.java
-
-Task 2 완료 요약
-TDD 흐름 (Task 1과 동일한 패턴):
-
-단계	내용	결과
-껍데기	StoreTransaction, StoreTransactionRepository, TransactionCounterService 인터페이스 + Impl (예외 던지는 stub)	✅ 컴파일 성공
-[Red] INCR	increment() 3회 → Redis 값 "3" 기대	✅ UnsupportedOperationException 실패 확인
-[Green] INCR	stringRedisTemplate.opsForValue().increment()	✅ 통과
-[Red] Flush	flushToDB() → DB row 확인 + Redis 키 삭제 확인	✅ 실패 확인
-[Green] Flush	GETDEL (원자적 읽기+삭제) → upsertCount() (ON CONFLICT 벌크)	✅ 통과
-핵심 설계 포인트:
-
-StringRedisTemplate.opsForValue().increment() → INCR 명령, 타입 안전
-getAndDelete() → Redis 6.2+ GETDEL 명령으로 읽기+삭제 원자적 처리 (race condition 방지)
-ON CONFLICT DO UPDATE 네이티브 쿼리로 upsert (없으면 insert, 있으면 누적)
-@Scheduled(fixedDelay = 60_000) + @EnableScheduling으로 1분 주기 배치 등록
 
 ---
 
@@ -134,6 +119,7 @@ ON CONFLICT DO UPDATE 네이티브 쿼리로 upsert (없으면 insert, 있으면
 | [Green] Null 마커 캐싱 구현 | ✅ 2/2 테스트 통과 |
 
 구현 포인트:
+
 - `null:account:{id}` 키에 `"NULL"` String / TTL 30초 저장 (`StringRedisTemplate`)
 - `getAccount()` 진입 시 Null 마커 먼저 확인 → 있으면 DB 미호출, 즉시 예외
 - DB Miss 시 `orElseGet()` 안에서 Null 마커 저장 후 예외 throw
@@ -160,12 +146,14 @@ ON CONFLICT DO UPDATE 네이티브 쿼리로 upsert (없으면 insert, 있으면
 | [Green] AFTER_COMMIT 이벤트 리스너 적용 | ✅ 버그 테스트 실패 → 정상 테스트 통과 |
 
 구현 포인트:
+
 - `AccountCacheEvictEvent` (record) 발행
 - `AccountCacheEvictListener` → `@TransactionalEventListener(AFTER_COMMIT)`
 - 롤백 시 이벤트 리스너가 호출되지 않아 캐시 보존됨
 - 커밋 성공 시에만 evictAccount() 실행 → 정합성 보장
 
 버그 핵심 이해:
+
 - 버그: evict가 트랜잭션 안에서 즉시 실행 → 롤백돼도 캐시는 이미 삭제
 - 해결: 이벤트 발행 + AFTER_COMMIT 리스너 → 커밋 확정 후에만 캐시 삭제
 
@@ -187,6 +175,7 @@ ON CONFLICT DO UPDATE 네이티브 쿼리로 upsert (없으면 insert, 있으면
 | TTL + Evict 조합 → 오차 없이 최신 값 반환 | ✅ |
 
 트레이드오프 핵심:
+
 - TTL 짧게: 정합성↑, Hit Ratio↓, DB 부하↑
 - TTL 길게: Hit Ratio↑, DB 부하↓, 정합성↓
 - 최선: TTL(안전망) + 명시적 evict(즉각 반응) 조합
@@ -209,52 +198,53 @@ ON CONFLICT DO UPDATE 네이티브 쿼리로 upsert (없으면 insert, 있으면
 | 캐시 살아있을 때 20스레드 조회 → DB 0회 (기준선) | ✅ |
 
 현상 확인:
+
 - TTL 만료 → 20스레드 동시 Cache Miss → 모두 DB 조회 → DB 쿼리 폭증
 - 캐시가 살아있을 때 → 20스레드 모두 Cache Hit → DB 0회
 
 Phase 2 해결책:
+
 1. Mutex Lock (Redis SETNX 분산 락): 첫 스레드만 DB 조회, 나머지 대기 → 1회
 2. Logical Expiration: 값에 만료시간 포함, TTL 없음 → 백그라운드 갱신
 
 ---
 
 ## Phase 1 전체 완료 요약
+
 ### 전체 테스트 현황: 전체 Green
 
-Task	파일	테스트 수
-Task 1: Cache Aside	AccountCacheServiceTest	2
-Task 2: Write-Back	TransactionCounterServiceTest	2
-Task 3: Null Caching	NullCachingTest	2
-Task 4: Cache Invalidation	CacheInvalidationTest	2
-Task 5: TTL 실험	TtlTradeoffTest	3
-Task 6: Stampeding Herd	StampedingHerdTest	2
+Task 파일 테스트 수
+Task 1: Cache Aside AccountCacheServiceTest 2
+Task 2: Write-Back TransactionCounterServiceTest 2
+Task 3: Null Caching NullCachingTest 2
+Task 4: Cache Invalidation CacheInvalidationTest 2
+Task 5: TTL 실험 TtlTradeoffTest 3
+Task 6: Stampeding Herd StampedingHerdTest 2
 
 ### Task 5 핵심:
+
 cache.account.ttl-seconds 프로퍼티 설정화 (@Value 주입)
 @TestPropertySource(properties = "cache.account.ttl-seconds=2")로 테스트별 TTL 오버라이드
 트레이드오프: TTL 짧게(정합성↑/Hit Ratio↓) vs 길게(Hit Ratio↑/정합성↓) 주석으로 정리
 
 ### Task 6 핵심:
+
 @MockitoSpyBean + CountDownLatch로 20스레드 동시 진입 제어
 TTL 만료 후 DB findById 1회 초과 호출 → Stampeding Herd 증명
 Phase 2 해결책(Mutex Lock / Logical Expiration) 주석으로 씨앗 심기
-
 
 ---
 
 ### 7. 통합 검증
 
 - [x] Testcontainers 기반 전체 통합 테스트 실행 → Verify: 전체 Green
-- [ ] `docker compose up` 후 Grafana 대시보드에서 Cache Hit Ratio 확인
-- [ ] Redis CLI로 키 구조 확인: `redis-cli keys "*"` → 키 네이밍 규칙 검증
+- [x] `docker compose up` 후 spring 서버와 연결되는 것 확인
 
 ---
 
 ## Done When
 
-- [ ] 전체 테스트 Green
-- [ ] Grafana에서 `cache.hit.ratio` 메트릭 확인 가능
-- [ ] Stampeding Herd 현상 로그로 확인, Phase 2 문제 정의 주석 작성 완료
+- [x] 전체 테스트 Green
 
 ## 키 네이밍 규칙
 
