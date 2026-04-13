@@ -1,5 +1,6 @@
 package com.example.wepay.service;
 
+import com.example.wepay.TestcontainersConfiguration;
 import com.example.wepay.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mockingDetails;
 
 @SpringBootTest
-@Import(com.example.wepay.TestcontainersConfiguration.class)
+@Import(TestcontainersConfiguration.class)
 @TestPropertySource(properties = "cache.account.ttl-seconds=2")
 @Sql(scripts = "/test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(statements = "DELETE FROM accounts", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -43,9 +44,11 @@ class MutexLockCacheServiceTest {
     @BeforeEach
     void clearCache() {
         var keys = redisTemplate.keys("account:*");
-        if (keys != null && !keys.isEmpty()) redisTemplate.delete(keys);
+        if (keys != null && !keys.isEmpty())
+            redisTemplate.delete(keys);
         var lockKeys = redisTemplate.keys("lock:account:*");
-        if (lockKeys != null && !lockKeys.isEmpty()) redisTemplate.delete(lockKeys);
+        if (lockKeys != null && !lockKeys.isEmpty())
+            redisTemplate.delete(lockKeys);
         clearInvocations(accountRepository);
     }
 
