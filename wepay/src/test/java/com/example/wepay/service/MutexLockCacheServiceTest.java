@@ -63,7 +63,7 @@ class MutexLockCacheServiceTest {
         clearInvocations(accountRepository);
         TimeUnit.MILLISECONDS.sleep(2500); // TTL 2초 만료
 
-        assertThat(redisTemplate.opsForValue().get("account:" + accountId)).isNull();
+        assertThat(redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + accountId)).isNull();
 
         // when: 20스레드 동시 조회
         CountDownLatch startLatch = new CountDownLatch(1);

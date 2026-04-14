@@ -3,6 +3,8 @@ package com.example.wepay.service;
 import com.example.wepay.domain.Account;
 
 public interface AccountCacheService {
+    String CACHE_PREFIX = "account:";
+
 
     /**
      * 계좌 조회 (Cache Aside).

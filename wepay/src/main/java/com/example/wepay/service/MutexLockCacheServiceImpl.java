@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit;
 @Service("mutexLock")
 class MutexLockCacheServiceImpl implements AccountCacheService {
 
-    private static final String CACHE_PREFIX = "account:";
     private static final String LOCK_PREFIX = "lock:account:";
+
 
     private final AccountRepository accountRepository;
     private final RedisTemplate<String, Object> redisTemplate;

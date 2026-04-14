@@ -46,7 +46,7 @@ class TtlTradeoffTest {
 
     @BeforeEach
     void clearCaches() {
-        var keys = redisTemplate.keys("account:*");
+        var keys = redisTemplate.keys(AccountCacheService.CACHE_PREFIX + "*");
         if (keys != null && !keys.isEmpty()) redisTemplate.delete(keys);
         var nullKeys = stringRedisTemplate.keys("null:account:*");
         if (nullKeys != null && !nullKeys.isEmpty()) stringRedisTemplate.delete(nullKeys);
@@ -88,13 +88,13 @@ class TtlTradeoffTest {
 
         // given: 캐싱 (TTL 2초)
         accountCacheService.getAccount(accountId);
-        assertThat(redisTemplate.opsForValue().get("account:" + accountId)).isNotNull();
+        assertThat(redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + accountId)).isNotNull();
 
         // when: TTL 만료까지 대기 (2초 + 여유 0.5초)
         TimeUnit.MILLISECONDS.sleep(2500);
 
         // then: 캐시 만료 확인
-        Object expiredCache = redisTemplate.opsForValue().get("account:" + accountId);
+        Object expiredCache = redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + accountId);
         assertThat(expiredCache).isNull();
 
         // DB에서 재조회 → 최신 값 반환
@@ -102,7 +102,7 @@ class TtlTradeoffTest {
         assertThat(reloaded.getBalance()).isEqualTo(originalBalance);
 
         // 재조회 후 새 캐시 저장됨
-        assertThat(redisTemplate.opsForValue().get("account:" + accountId)).isNotNull();
+        assertThat(redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + accountId)).isNotNull();
 
         /*
          * [트레이드오프 정리]

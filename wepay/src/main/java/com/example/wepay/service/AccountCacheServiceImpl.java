@@ -15,8 +15,8 @@ import java.time.Duration;
 class AccountCacheServiceImpl implements AccountCacheService {
 
     // Cache Aside: account:{id}  / TTL 설정값(기본 60초) / JSON 직렬화
-    private static final String CACHE_PREFIX = "account:";
     private final Duration CACHE_TTL;
+
 
     // Null Caching: null:account:{id} / TTL 30초 / String "NULL" 마커
     private static final String NULL_PREFIX = "null:account:";

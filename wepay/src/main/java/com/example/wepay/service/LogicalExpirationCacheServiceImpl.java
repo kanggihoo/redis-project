@@ -15,8 +15,10 @@ import java.util.concurrent.Executors;
 /**
  * 논리적 만료(Logical Expiration) 기법을 사용하여 계정 캐시를 관리하는 서비스 구현체입니다.
  *
- * <p>이 구현체는 Cache Stampede 문제를 해결하기 위해 다음 전략을 사용합니다:
- * 1. Redis 자체의 TTL 기능을 사용하는 대신, 캐시 데이터 내부에 '만료 시간'을 포함하는 Wrapper(AccountCacheWrapper)를 저장합니다.
+ * <p>
+ * 이 구현체는 Cache Stampede 문제를 해결하기 위해 다음 전략을 사용합니다:
+ * 1. Redis 자체의 TTL 기능을 사용하는 대신, 캐시 데이터 내부에 '만료 시간'을 포함하는
+ * Wrapper(AccountCacheWrapper)를 저장합니다.
  * 2. 캐시 조회 시 논리적 만료 시간이 지난 경우에도 즉시 기존(Stale) 데이터를 반환하여 응답 지연을 방지합니다.
  * 3. 만료된 데이터에 대해서는 백그라운드 스레드에서 비동기적으로 DB 데이터를 조회하여 캐시를 갱신합니다.
  * 4. ConcurrentHashMap을 이용한 Rebuild Flag를 통해 동일한 키에 대한 중복 갱신 작업을 방지합니다.
@@ -24,9 +26,8 @@ import java.util.concurrent.Executors;
 @Service("logicalExpiration")
 class LogicalExpirationCacheServiceImpl implements AccountCacheService {
 
-    private static final String CACHE_PREFIX = "account:";
-
     private final AccountRepository accountRepository;
+
     private final RedisTemplate<String, Object> redisTemplate;
     private final long logicalTtlMillis;
 
@@ -44,11 +45,12 @@ class LogicalExpirationCacheServiceImpl implements AccountCacheService {
     /**
      * @param accountRepository DB 조회를 위한 리포지토리
      * @param redisTemplate     Redis 접근을 위한 템플릿
-     * @param logicalTtlSeconds 설정 파일(`cache.account.logical-ttl-seconds`)에서 주입받는 논리적 TTL 시간(초 단위)
+     * @param logicalTtlSeconds 설정 파일(`cache.account.logical-ttl-seconds`)에서 주입받는
+     *                          논리적 TTL 시간(초 단위)
      */
     LogicalExpirationCacheServiceImpl(AccountRepository accountRepository,
-                                      RedisTemplate<String, Object> redisTemplate,
-                                      @Value("${cache.account.logical-ttl-seconds:60}") long logicalTtlSeconds) {
+            RedisTemplate<String, Object> redisTemplate,
+            @Value("${cache.account.logical-ttl-seconds:60}") long logicalTtlSeconds) {
         this.accountRepository = accountRepository;
         this.redisTemplate = redisTemplate;
         this.logicalTtlMillis = logicalTtlSeconds * 1000L;
@@ -75,7 +77,7 @@ class LogicalExpirationCacheServiceImpl implements AccountCacheService {
             if (wrapper.isExpired()) {
                 // [Cache Stampede 대응 핵심 로직]
                 // 3. 만료되었더라도 즉시 기존 데이터(Stale Data)를 반환하여 클라이언트 대기 방지
-                
+
                 // 4. 비동기 백그라운드 갱신 시도 (중복 실행 방지)
                 // 이미 동일 키에 대해 리빌드 중이라면 추가 작업을 수행하지 않음 (putIfAbsent)
                 if (rebuildFlags.putIfAbsent(cacheKey, Boolean.TRUE) == null) {
