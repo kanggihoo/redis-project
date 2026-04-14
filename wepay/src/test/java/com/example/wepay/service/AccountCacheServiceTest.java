@@ -42,7 +42,7 @@ class AccountCacheServiceTest {
         // given: Redis에 미리 캐시 저장
         Long id = 1L;
         Account cached = new Account("CachedAlice", 9_999_999L);
-        redisTemplate.opsForValue().set("account:" + id, cached);
+        redisTemplate.opsForValue().set(AccountCacheService.CACHE_PREFIX + id, cached);
 
         // when
         Account result = accountCacheService.getAccount(id);
@@ -66,7 +66,7 @@ class AccountCacheServiceTest {
         assertThat(result.getBalance()).isEqualTo(1_000_000L);
 
         // and: Redis에 캐시가 저장되었는지 확인
-        Object cached = redisTemplate.opsForValue().get("account:" + id);
+        Object cached = redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + id);
         assertThat(cached).isNotNull();
     }
 }

@@ -3,18 +3,20 @@ package com.example.wepay.service;
 import com.example.wepay.domain.Account;
 import com.example.wepay.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
+@Primary
 @Service
 class AccountCacheServiceImpl implements AccountCacheService {
 
     // Cache Aside: account:{id}  / TTL 설정값(기본 60초) / JSON 직렬화
-    private static final String CACHE_PREFIX = "account:";
     private final Duration CACHE_TTL;
+
 
     // Null Caching: null:account:{id} / TTL 30초 / String "NULL" 마커
     private static final String NULL_PREFIX = "null:account:";
