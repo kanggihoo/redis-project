@@ -1,8 +1,11 @@
 package com.example.wepay.controller;
 
+import com.example.wepay.interceptor.JwtBlacklistInterceptor;
+import com.example.wepay.interceptor.RateLimitInterceptor;
 import com.example.wepay.service.DailyActiveUserService;
 import com.example.wepay.service.StoreLocationService;
 import com.example.wepay.service.StoreRankingService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -21,6 +25,18 @@ class StoreControllerTest {
 
     @Autowired
     MockMvcTester mvc;
+
+    @MockitoBean
+    RateLimitInterceptor rateLimitInterceptor;
+
+    @MockitoBean
+    JwtBlacklistInterceptor jwtBlacklistInterceptor;
+
+    @BeforeEach
+    void stubInterceptors() throws Exception {
+        given(rateLimitInterceptor.preHandle(any(), any(), any())).willReturn(true);
+        given(jwtBlacklistInterceptor.preHandle(any(), any(), any())).willReturn(true);
+    }
 
     @MockitoBean
     StoreRankingService storeRankingService;

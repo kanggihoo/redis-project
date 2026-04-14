@@ -114,3 +114,6 @@ test-results/
 # --- Artifacts ---
 /artifacts/
 /dist/
+
+# Temporary Files
+.gemini_temp_diff.txt

@@ -6,3 +6,15 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+rate-limit:
+  transfer:
+    max-requests: 5
+    window-seconds: 60
+  account-read:
+    max-requests: 100
+    window-seconds: 60
+
+jwt:
+  secret: wepay-phase3-test-secret-key-minimum-256-bits-long-enough
+  expiration-seconds: 3600

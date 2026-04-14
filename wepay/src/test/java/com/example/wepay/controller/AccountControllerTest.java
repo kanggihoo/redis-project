@@ -1,7 +1,10 @@
 package com.example.wepay.controller;
 
 import com.example.wepay.domain.Account;
+import com.example.wepay.interceptor.JwtBlacklistInterceptor;
+import com.example.wepay.interceptor.RateLimitInterceptor;
 import com.example.wepay.service.AccountCacheService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @WebMvcTest(AccountController.class)
@@ -17,6 +21,18 @@ class AccountControllerTest {
 
     @Autowired
     MockMvcTester mvc;
+
+    @MockitoBean
+    RateLimitInterceptor rateLimitInterceptor;
+
+    @MockitoBean
+    JwtBlacklistInterceptor jwtBlacklistInterceptor;
+
+    @BeforeEach
+    void stubInterceptors() throws Exception {
+        given(rateLimitInterceptor.preHandle(any(), any(), any())).willReturn(true);
+        given(jwtBlacklistInterceptor.preHandle(any(), any(), any())).willReturn(true);
+    }
 
     @MockitoBean(name = "accountCacheServiceImpl")
     AccountCacheService baseline;
