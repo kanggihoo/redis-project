@@ -70,7 +70,7 @@ class StampedingHerdTest {
         TimeUnit.MILLISECONDS.sleep(2500); // TTL 2초 만료
 
         // 캐시가 만료되었는지 확인
-        assertThat(redisTemplate.opsForValue().get("account:" + accountId)).isNull();
+        assertThat(redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + accountId)).isNull();
 
         // when: 20 스레드가 동시에 Cache Miss → DB 조회
         CountDownLatch startLatch = new CountDownLatch(1);  // 동시 출발 신호
@@ -124,7 +124,7 @@ class StampedingHerdTest {
 
         // given: 캐싱 (TTL 유효)
         accountCacheService.getAccount(accountId);
-        assertThat(redisTemplate.opsForValue().get("account:" + accountId)).isNotNull();
+        assertThat(redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + accountId)).isNotNull();
 
         // Spy 초기화 (위의 getAccount 1회 호출 제외)
         org.mockito.Mockito.clearInvocations(accountRepository);

@@ -42,6 +42,11 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: wepay-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-remote-write-receiver'
+      # - '--storage.tsdb.retention.time=15d' # 데이터 저장 정책 설정 예시 (필요시 주석 해제)
     ports:
       - "9090:9090"
     volumes:
@@ -66,11 +71,14 @@ services:
     container_name: wepay-k6
     volumes:
       - ./load-tests:/scripts
+    environment:
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+      - K6_PROMETHEUS_RW_TREND_STATS=p(95),p(99),avg,max
     extra_hosts:
       - "host.docker.internal:host-gateway"
     profiles:
       - loadtest
-    entrypoint: ["k6", "run", "/scripts/stampeding-herd.js"]
+    entrypoint: ["k6", "run", "-o", "prometheus-rw", "/scripts/stampeding-herd.js"]
 
 volumes:
   postgres_data:

@@ -408,8 +408,8 @@ public class StoreController {
 
 ### Task 10. 통합 검증
 
-- [ ] 전체 테스트 Green: `./gradlew test`
-- [ ] docker-compose + Spring Boot 기동 후 REST API 수동 확인
+- [x] 전체 테스트 Green: `./gradlew test`
+- [x] docker-compose + Spring Boot 기동 후 REST API 수동 확인
 - [ ] K6 부하테스트 실행 → 3전략 비교 결과 확인
 - [ ] 결과를 주석/문서로 기록
 

@@ -61,7 +61,7 @@ class TtlJitterCacheServiceTest {
         for (int i = 0; i < 100; i++) {
             ttlJitterCacheService.evictAccount(accountId);
             ttlJitterCacheService.getAccount(accountId);
-            Long ttl = redisTemplate.getExpire("account:" + accountId, TimeUnit.SECONDS);
+            Long ttl = redisTemplate.getExpire(AccountCacheService.CACHE_PREFIX + accountId, TimeUnit.SECONDS);
             if (ttl != null && ttl > 0) {
                 observedTtls.add(ttl);
             }
@@ -82,7 +82,7 @@ class TtlJitterCacheServiceTest {
         ttlJitterCacheService.getAccount(accountId);
         clearInvocations(accountRepository);
         // TTL 만료를 강제하기 위해 캐시 직접 삭제 (Jitter로 TTL이 60~90초라 대기 불가)
-        redisTemplate.delete("account:" + accountId);
+        redisTemplate.delete(AccountCacheService.CACHE_PREFIX + accountId);
 
         // when: 20스레드 동시 조회
         CountDownLatch startLatch = new CountDownLatch(1);

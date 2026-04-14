@@ -61,7 +61,7 @@ class CacheInvalidationTest {
         // given: 계좌를 미리 캐싱 (잔액 1,000,000)
         Account original = accountCacheService.getAccount(accountId);
         assertThat(original.getBalance()).isEqualTo(originalBalance);
-        assertThat(redisTemplate.opsForValue().get("account:" + accountId)).isNotNull();
+        assertThat(redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + accountId)).isNotNull();
 
         // when: updateBalance() → DB UPDATE + evict → 예외 발생 → 롤백
         // TransactionTemplate으로 rollback-only 트랜잭션을 명시적으로 실행
@@ -74,7 +74,7 @@ class CacheInvalidationTest {
 
         // then: DB는 롤백 → 여전히 1,000,000
         // but 버그: evictAccount()가 커밋 전에 실행됐으므로 캐시는 이미 삭제됨
-        Object cachedAfterRollback = redisTemplate.opsForValue().get("account:" + accountId);
+        Object cachedAfterRollback = redisTemplate.opsForValue().get(AccountCacheService.CACHE_PREFIX + accountId);
 
         // ✅ 수정 후: AFTER_COMMIT 이므로 롤백 시 캐시 삭제가 발생하지 않는다
         // 캐시는 롤백 전 값(1,000,000)이 그대로 보존되어야 한다
