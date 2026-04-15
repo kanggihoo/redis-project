@@ -1,8 +1,10 @@
 package com.example.wepay.service;
 
+import com.example.wepay.util.RedisKeyManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import java.util.concurrent.TimeUnit;
 
 @Service("slidingWindow")
 public class SlidingWindowRateLimitService implements RateLimitService {
@@ -12,8 +14,8 @@ public class SlidingWindowRateLimitService implements RateLimitService {
     private final long windowSeconds;
 
     public SlidingWindowRateLimitService(StringRedisTemplate stringRedisTemplate,
-                                          @Value("${rate-limit.transfer.max-requests}") int maxRequests,
-                                          @Value("${rate-limit.transfer.window-seconds}") long windowSeconds) {
+            @Value("${rate-limit.transfer.max-requests}") int maxRequests,
+            @Value("${rate-limit.transfer.window-seconds}") long windowSeconds) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.maxRequests = maxRequests;
         this.windowSeconds = windowSeconds;
@@ -21,7 +23,7 @@ public class SlidingWindowRateLimitService implements RateLimitService {
 
     @Override
     public boolean isAllowed(String apiKey, String identifier) {
-        String key = buildKey(apiKey, identifier);
+        String key = RedisKeyManager.getRateLimitKey("sliding", apiKey, identifier);
         long now = System.currentTimeMillis();
         long windowStart = now - (windowSeconds * 1000);
 
@@ -39,12 +41,8 @@ public class SlidingWindowRateLimitService implements RateLimitService {
         stringRedisTemplate.opsForZSet().add(key, member, now);
 
         // 키 자체 TTL 설정 (메모리 안전망)
-        stringRedisTemplate.expire(key, windowSeconds, java.util.concurrent.TimeUnit.SECONDS);
+        stringRedisTemplate.expire(key, windowSeconds, TimeUnit.SECONDS);
 
         return true;
-    }
-
-    private String buildKey(String apiKey, String identifier) {
-        return "ratelimit:sliding:" + apiKey + ":" + identifier;
     }
 }
