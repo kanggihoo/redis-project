@@ -3,8 +3,10 @@ name: git-commit
 description: 'Execute git commit with conventional commit message analysis, intelligent staging, and message generation. Use when user asks to commit changes, create a git commit, or mentions "/commit". Supports: (1) Auto-detecting type and scope from changes, (2) Generating conventional commit messages from diff, (3) Interactive commit with optional type/scope/description overrides, (4) Intelligent file staging for logical grouping'
 license: MIT
 allowed-tools: Bash
-origin: external
+origin: fork
 source: https://github.com/github/awesome-copilot
+refs:
+  - https://www.conventionalcommits.org/en/v1.0.0/
 ---
 
 # Git Commit with Conventional Commits
@@ -53,22 +55,16 @@ BREAKING CHANGE: `extends` key behavior changed
 
 ## Workflow
 
-### 1. Analyze Diff
+### 1. Check Status
 
 ```bash
-# If files are staged, use staged diff
-git diff --staged
-
-# If nothing staged, use working tree diff
-git diff
-
-# Also check status
+# Verify what has changed and what is already staged
 git status --porcelain
 ```
 
-### 2. Stage Files (if needed)
+### 2. Stage Files
 
-If nothing is staged or you want to group changes differently:
+Stage only the files that belong to one logical change:
 
 ```bash
 # Stage specific files
@@ -78,13 +74,26 @@ git add path/to/file1 path/to/file2
 git add *.test.*
 git add src/components/*
 
-# Interactive staging
+# Interactive staging (hunk-level control)
 git add -p
 ```
 
 **Never commit secrets** (.env, credentials.json, private keys).
 
-### 3. Generate Commit Message
+### 3. Analyze Staged Diff
+
+```bash
+# Review exactly what will be committed
+git diff --staged
+```
+
+If nothing is staged yet, fall back to the working tree diff to understand the full scope of changes:
+
+```bash
+git diff
+```
+
+### 4. Generate Commit Message
 
 Analyze the diff to determine:
 
@@ -92,15 +101,58 @@ Analyze the diff to determine:
 - **Scope**: What area/module is affected?
 - **Description**: One-line summary of what changed (present tense, imperative mood, <72 chars)
 
-### 4. Execute Commit
+### Commit Shape
+
+- Prefer one logical change per commit.
+- Split independent changes into separate commits when possible.
+- Group changes only when they serve one clear purpose and would be hard to understand apart.
+- Keep the subject short and specific.
+- Use the body only when extra context helps explain why the change was made.
+- Format the body as short bullet points rather than long paragraphs.
+
+### Subject and Body Guidance
+
+- Subject line: one-line summary, imperative mood, specific, and ideally under 72 characters.
+- Body: explain the motivation, tradeoffs, or key implementation details.
+- Body should answer "why" and "what changed" more than "every file that changed".
+- If the change is simple, a subject line alone is enough.
+- If the change is complex, use 2-5 short bullets.
+
+### Suggested Message Template
+
+```text
+<type>(<scope>): <short summary>
+
+- <key change or reason>
+- <key change or reason>
+- <key change or reason>
+```
+
+Example:
+
+```text
+test(auth): migrate controller tests to MockMvcTester
+
+- remove addFilters=false anti-pattern
+- inject CustomUserDetails with springSecurity()
+- add TestSecurityConfig to avoid LogoutFilter interference
+```
+
+### Scope Guidance
+
+- Include a scope when the affected module or area is clear.
+- Omit the scope when the change is broad or the scope would not add clarity.
+- Prefer stable module names over file names.
+
+### 5. Execute Commit
 
 ```bash
 # Single line
-git commit -m "<type>[scope]: <description>"
+git commit -m "<type>(<scope>): <description>"
 
 # Multi-line with body/footer
 git commit -m "$(cat <<'EOF'
-<type>[scope]: <description>
+<type>(<scope>): <description>
 
 <optional body>
 
@@ -115,7 +167,8 @@ EOF
 - Present tense: "add" not "added"
 - Imperative mood: "fix bug" not "fixes bug"
 - Reference issues: `Closes #123`, `Refs #456`
-- Keep description under 72 characters
+- Keep the subject under 72 characters when possible
+- Keep the body concise and bullet-based
 
 ## Git Safety Protocol
 
